@@ -1,0 +1,87 @@
+#include <SimbleeBLE.h>
+#define boton1 5
+#define boton2 6
+
+#define ledR 2
+#define ledG 3
+#define ledB 4
+
+int estado1 = 0;
+int estado2 = 0;
+
+void setup() {
+  // initialize the LED pin as an output:
+  pinMode(ledR, OUTPUT);
+  pinMode(ledB, OUTPUT);
+  pinMode(ledG, OUTPUT);
+  // initialize the pushbutton pin as an input:
+  pinMode(boton1, INPUT);
+  pinMode(boton2, INPUT);
+
+  pinMode(29, OUTPUT);
+
+  SimbleeBLE.txPowerLevel = -20;
+  SimbleeBLE.deviceName = "S.Fredy";
+  //SimbleeBLE.advertisementData = "Hola amiguitos";
+  //  SimbleeBLE.advertisementInterval = 1000;
+  Serial.begin(9600);
+  SimbleeBLE.begin();
+}
+void loop() {
+  estado1 = digitalRead(boton1);
+  estado2 = digitalRead(boton2);
+  if (estado1) {
+    SimbleeBLE.send(1);
+    digitalWrite(29, HIGH);
+  }
+  if (estado2) {
+    SimbleeBLE.send(2);
+    digitalWrite(29, LOW);
+  }
+}
+
+void SimbleeBLE_onConnect()
+{
+  digitalWrite(ledR, HIGH);
+  delay(100);
+  digitalWrite(ledR, LOW);
+  digitalWrite(ledG, HIGH);
+  delay(100);
+  digitalWrite(ledG, LOW);
+  digitalWrite(ledB, HIGH);
+  delay(100);
+
+  digitalWrite(ledR, LOW);
+  digitalWrite(ledG, LOW);
+  digitalWrite(ledB, LOW); //apaga todos
+}
+void SimbleeBLE_onDisconnect()
+{
+  digitalWrite(ledR, LOW);
+  digitalWrite(ledG, LOW);
+  digitalWrite(ledB, LOW); //apaga todos
+  for (int i = 5; i > 0; i--) {
+    digitalWrite(ledR, HIGH);
+    delay(200);
+    digitalWrite(ledR, LOW);
+    delay(200);
+  }
+}
+void SimbleeBLE_onReceive(char *data, int len) {
+  byte x;
+  x = data[0] - 48;
+  Serial.println("Valor: ");
+  Serial.println(x);
+  switch (x) {
+    case 1:
+      digitalWrite(ledR, HIGH);
+      digitalWrite(ledG, LOW);
+      digitalWrite(ledB, LOW);
+      break;
+    case 2:
+      digitalWrite(ledR, LOW);
+      digitalWrite(ledG, LOW);
+      digitalWrite(ledB, LOW);
+      break;
+  }
+}
